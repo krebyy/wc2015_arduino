@@ -46,7 +46,7 @@ void setup()
 
 	delay(1000);
 
-	targetSpeedX = SPEEDX_TO_COUNTS(500);//param_speedX_med);
+	targetSpeedX = SPEEDX_TO_COUNTS(800);//param_speedX_med);
 	accX = decX = ACCX_TO_COUNTS(1000);//param_accX);
 	distanceLeft = MM_TO_COUNTS(13155);
 

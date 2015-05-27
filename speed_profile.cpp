@@ -142,7 +142,7 @@ void calculateMotorPwm(void) // encoder PD controller
 	posErrorW = curSpeedW - rotationalFeedback;
 
 	posPwmX = KP_X * posErrorX + KD_X * (posErrorX - oldPosErrorX);
-	posPwmW = (posErrorW / KP_W) + KD_W * (posErrorW - oldPosErrorW);
+	posPwmW = (posErrorW / KP_W) + ((posErrorW - oldPosErrorW) / KD_W);
 
 	oldPosErrorX = posErrorX;
 	oldPosErrorW = posErrorW;

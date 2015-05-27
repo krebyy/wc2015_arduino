@@ -16,8 +16,8 @@
 /* Constantes ----------------------------------------------------------------*/
 #define KP_X 2
 #define KD_X 0
-#define KP_W 10
-#define KD_W 0
+#define KP_W 15
+#define KD_W 3
 
 #define TS 10	// Tempo de atualização em [ms]
 
@@ -29,7 +29,7 @@
 
 /* Macros --------------------------------------------------------------------*/
 #define MM_TO_COUNTS(mm)	((((int32_t)mm) * CNT_PER_1000MM) / 1000)
-#define SPEEDX_TO_COUNTS(speed)	((CNT_PER_1000MM * ((int32_t)speed) * TS) / 1000000)
+#define SPEEDX_TO_COUNTS(speed)	((CNT_PER_1000MM * ((int32_t)speed * 2) * TS) / 1000000)
 #define ACCX_TO_COUNTS(acc)		(SPEEDX_TO_COUNTS((int32_t)acc / 2) / TS)
 #define COUNTS_TO_MM(cnt)	((((int32_t)cnt) * 1000) / CNT_PER_1000MM)
 

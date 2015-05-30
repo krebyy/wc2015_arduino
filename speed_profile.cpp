@@ -1,16 +1,19 @@
-/*
- * speed_profile.cpp
- *
- *  Created on: 20/05/2015
- *      Author: Kleber
- */
-
+/**
+  ******************************************************************************
+  * @file    wc2015/src/sensores.c
+  * @author  Kleber Lima da Silva (kleber.ufu@hotmail.com)
+  * @version V1.0.0
+  * @date    27-Abril-2015
+  * @brief   Funções para controle de velocidade dos motores
+  ******************************************************************************
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "speed_profile.h"
+#include <math.h>
 
 
-/* Vari�veis privadas --------------------------------------------------------*/
+/* Variáveis privadas --------------------------------------------------------*/
 int32_t leftEncoderChange = 0, rightEncoderChange = 0;
 int32_t encoderChange = 0, encoderCount = 0;
 int32_t leftEncoderOld = 0, rightEncoderOld = 0;
@@ -24,8 +27,19 @@ int32_t oldSensorError = 0;
 
 int32_t curSpeedX = 0, curSpeedW = 0;
 
+int32_t bufferCounts[201];
+uint8_t index_buffer_counts = 1;
 
-/* Vari�veis externas --------------------------------------------------------*/
+int32_t bufferDistances[20] = {0};
+int32_t bufferSpeedsWm[20] = {0};
+uint8_t index_buffer_sector = 0;
+int32_t accumulatorSpeedW = 0, numSpeedW = 0;
+
+int32_t bufferSpeedXout[20] = {0};
+int32_t bufferSpeedWout[20] = {0};
+
+
+/* Variáveis externas --------------------------------------------------------*/
 int32_t distanceLeft = 0, distance_mm = 0;
 int32_t targetSpeedX = 0, targetSpeedW = 0;
 int32_t endSpeedX = 0, endSpeedW = 0;
@@ -35,8 +49,8 @@ bool onlyUseEncoderFeedback = false;
 bool onlyUseGyroFeedback = false;
 bool onlyUseSensorFeedback = false;
 
-
-
+//#define CNTS_PRINTS
+//#define RUN1_PRINTS
 
 
 void speedProfile(void)
@@ -44,6 +58,63 @@ void speedProfile(void)
 	getEncoderStatus();
 	updateCurrentSpeed();
 	calculateMotorPwm();
+
+	// Registra a distância do trecho e o SpeedW_médio
+	if (valid_marker == true)
+	{
+		bufferDistances[index_buffer_sector] = distance - bufferDistances[index_buffer_sector - 1];
+		bufferSpeedsWm[index_buffer_sector] = accumulatorSpeedW / numSpeedW;
+
+#ifdef RUN1_PRINTS
+		printf("D[%d] = %ld\r\n", index_buffer_sector, bufferDistances[index_buffer_sector]);
+		printf("W[%d] = %ld\r\n", index_buffer_sector, bufferSpeedsWm[index_buffer_sector]);
+#endif
+
+		index_buffer_sector++;
+		accumulatorSpeedW = 0;
+		numSpeedW = 0;
+		valid_marker = false;
+	}
+
+	// Quando o robô parar na linha de chegada: calcula as velocidades do speedProfile
+	if (frun == 4 && curSpeedX == 0)
+	{
+//		printf("\r\n");
+
+		for (uint8_t i = 0; i < index_buffer_sector; i++)
+		{
+			if (abs(bufferSpeedsWm[i]) < MINIMAL_SX_STRAIGHT)
+			{	// Reta
+				bufferSpeedXout[i] = SPEEDX_TO_COUNTS(PARAM_SPEEDX_MAX);
+				bufferSpeedWout[i] = 0;
+			}
+			else
+			{	// Curva
+				float ray = (float)SPEEDX_TO_COUNTS(PARAM_SPEEDX_MED) / (float)bufferSpeedsWm[i];
+				bufferSpeedXout[i] = (int32_t)(sqrt(ACCC_TO_COUNTS(PARAM_ACCC) * abs(ray));
+				bufferSpeedWout[i] = (int32_t)(bufferSpeedXout[i] / ray);
+			}
+
+//			printf("SX[%d] = %ld\r\n", i, bufferSpeedXout[i]);
+//			printf("SW[%d] = %ld\r\n", i, bufferSpeedWout[i]);
+		}
+
+		frun = 5;
+	}
+
+#ifdef CNTS_PRINTS
+	// Envia as velocidades (pacotes de 100 contagens - a cada 100ms)
+	bufferCounts[index_buffer_counts] = leftEncoderChange;
+	bufferCounts[index_buffer_counts + 1] = rightEncoderChange;
+	index_buffer_counts += 2;
+	if (index_buffer_counts == 201)
+	{
+		bufferCounts[0] = 0xAAAAAAAA;
+		HAL_UART_DMAResume(&huart1);
+		HAL_UART_Transmit_DMA(&huart1, (uint8_t*)bufferCounts, 804);
+		index_buffer_counts = 1;
+	}
+#endif
 }
 
 
@@ -63,9 +134,9 @@ void getEncoderStatus(void)
 
 	leftEncoderCount += leftEncoderChange;
 	rightEncoderCount += rightEncoderChange;
-	encoderCount =  (abs(leftEncoderCount) + abs(rightEncoderCount)) / 2;
+	encoderCount =  (leftEncoderCount + rightEncoderCount) / 2;
 
-	//distanceLeft -= encoderChange;// update distanceLeft
+	distanceLeft -= encoderChange;// update distanceLeft
 	distance += encoderChange;
 	distance_mm = COUNTS_TO_MM(distance);
 }
@@ -118,12 +189,16 @@ void calculateMotorPwm(void) // encoder PD controller
 {
 	int32_t rotationalFeedback;
 	int32_t sensorFeedback;
+
 	int32_t encoderFeedbackX, encoderFeedbackW;
 	int32_t posPwmX, posPwmW;
 
     /* simple PD loop to generate base speed for both motors */
 	encoderFeedbackX = rightEncoderChange + leftEncoderChange;
 	encoderFeedbackW = rightEncoderChange - leftEncoderChange;
+
+	accumulatorSpeedW += encoderFeedbackW;
+	numSpeedW++;
 
 	sensorFeedback = getSensorError();
 	if (sensorFeedback == INFINITO) sensorFeedback = oldSensorError;
@@ -167,21 +242,7 @@ int32_t needToDecelerate(int32_t dist, int32_t curSpd, int32_t endSpd)
 
 void resetProfile(void)
 {
-	curSpeedX = 0;
-	curSpeedW = 0;
-	encoderEsquerda.write(0);
-	encoderDireita.write(0);
-
-	leftEncoderCount = 0;
-	rightEncoderCount = 0;
-	encoderCount = 0;
-
-	posErrorX = 0;
-	posErrorW = 0;
-	oldPosErrorX = 0;
-	oldPosErrorW = 0;
-
-	distance = 0;
-	distance_mm = 0;
+	//curSpeedX = curSpeedW = 0;
+	posErrorX = posErrorW = 0;
+	oldPosErrorX = oldPosErrorW = 0;
 }
-

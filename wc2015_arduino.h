@@ -6,6 +6,7 @@
 
 #ifndef _wc2015_arduino_H_
 #define _wc2015_arduino_H_
+
 #include "Arduino.h"
 //add your includes for the project wc2015_arduino here
 #include "Encoder.h"
@@ -13,6 +14,14 @@
 #include "sensores.h"
 #include "speed_profile.h"
 #include <stdint.h>
+
+
+/* Constantes ----------------------------------------------------------------*/
+#define PARAM_SPEEDX_MIN 0
+#define PARAM_SPEEDX_MED 800
+#define PARAM_SPEEDX_MAX 2500
+#define PARAM_ACCX		 1000
+#define PARAM_ACCC		 6400
 
 //end of add your includes here
 #ifdef __cplusplus
@@ -27,17 +36,15 @@ void setup();
 //add your function definitions for the project wc2015_arduino here
 
 /* Constantes ----------------------------------------------------------------*/
-// Definição dos pinos no modo MICROMOUSE
-const uint8_t LED1 = 0;		// LED1
-const uint8_t LED2 = 1;		// LED2
+// Definiï¿½ï¿½o dos pinos no modo MICROMOUSE
 const uint8_t B_ENC_E = 2;	// Encoder do motor esquerdo (sinal B)
 const uint8_t A_ENC_D = 3;	// Encoder do motor direito (sinal A)
 const uint8_t A_ENC_E = 4;	// Encoder do motor esquerdo (sinal A)
 const uint8_t B_ENC_D = 5;	// Encoder do motor direito (sinal B)
-const uint8_t SW1 = 12;		// Botão SW1
+const uint8_t SW1 = 12;		// Botï¿½o SW1
 
 
-/* Variáveis Externas --------------------------------------------------------*/
+/* Variï¿½veis Externas --------------------------------------------------------*/
 extern Encoder encoderEsquerda;
 extern Encoder encoderDireita;
 

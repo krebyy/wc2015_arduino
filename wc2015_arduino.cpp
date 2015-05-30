@@ -1,21 +1,21 @@
 // Do not remove the include below
 #include "wc2015_arduino.h"
 
-// Configuração dos Encoders -------------------------------------
+// Configuraï¿½ï¿½o dos Encoders -------------------------------------
 Encoder encoderEsquerda(B_ENC_E, A_ENC_E);
 Encoder encoderDireita(A_ENC_D, B_ENC_D);
 
 
 
-// Variáveis do programa -----------------------------------------
+// Variï¿½veis do programa -----------------------------------------
 
 
 
-// Protótipos das funções ----------------------------------------
+// Protï¿½tipos das funï¿½ï¿½es ----------------------------------------
 
 
 
-// Inicialização dos pinos ---------------------------------------
+// Inicializaï¿½ï¿½o dos pinos ---------------------------------------
 void setup()
 {
 	pinMode(LINHA6, INPUT);
@@ -25,10 +25,8 @@ void setup()
 	pinMode(LINHA2, INPUT);
 	pinMode(LINHA1, INPUT);
 	pinMode(EMISSORES, OUTPUT);
-	//pinMode(LED1, OUTPUT);
-	//pinMode(LED2, OUTPUT);
-	pinMode(0, INPUT);
-	pinMode(1, OUTPUT);
+	pinMode(L_MARK_R, INPUT);
+	pinMode(R_MARK_R, INPUT);
 	pinMode(PWM_E, OUTPUT);
 	pinMode(IN1_E, OUTPUT);
 	pinMode(IN2_E, OUTPUT);
@@ -37,17 +35,16 @@ void setup()
 	pinMode(IN2_D, OUTPUT);
 	pinMode(SW1, INPUT);
 
-	Serial.begin(115200);
 
 	while (digitalRead(SW1) == LOW)
 	{
-		// funções para leitura/gravação dos parâmetros do robô
+		// funï¿½ï¿½es para leitura/gravaï¿½ï¿½o dos parï¿½metros do robï¿½
 	}
 
 	delay(1000);
 
-	targetSpeedX = SPEEDX_TO_COUNTS(800);//param_speedX_med);
-	accX = decX = ACCX_TO_COUNTS(1000);//param_accX);
+	targetSpeedX = SPEEDX_TO_COUNTS(PARAM_SPEEDX_MED);		// PARAM_SPEEDX_MED;
+	accX = decX = ACCX_TO_COUNTS(PARAM_ACCX);   // PARAM_ACCX);
 	distanceLeft = MM_TO_COUNTS(13155);
 
 	encoderEsquerda.write(0);
@@ -64,6 +61,6 @@ void loop()
 
 	speedProfile();
 
-	// Tempo de atualização do controle = 10ms
+	// Tempo de atualizaï¿½ï¿½o do controle = 10ms
 	while((micros() - t0) < 10000);
 }

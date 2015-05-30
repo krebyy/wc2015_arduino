@@ -19,12 +19,14 @@
 #define KP_W 10//15 -- 800mm/s
 #define KD_W 80//3
 
-#define TS 10	// Tempo de atualização em [ms]
+#define TS 10	// Tempo de atualizaï¿½ï¿½o em [ms]
 
 #define CNT_PER_1000MM 3560
 #define CNT_PER_360DEG 928	// = ((2*pi*W_DISTANCE)*CNT_PER_1000MM)/(2*1000)          928
 
 #define SENSOR_SCALE 1
+
+#define MINIMAL_SX_STRAIGHT 5
 
 
 /* Macros --------------------------------------------------------------------*/
@@ -38,8 +40,10 @@
 #define ACCW_TO_COUNTS(acc)		(SPEEDW_TO_COUNTS((int32_t)acc / 2) / TS)
 #define COUNTS_TO_DEG(cnt)	((((int32_t)cnt) * 360) / CNT_PER_360DEG)
 
+#define ACCC_TO_COUNTS(acc) (float)((float)acc * 7296.0f) / 2133.3f)
 
-/* Protótipos das Funções --------------------------------------------------- */
+
+/* Protï¿½tipos das Funï¿½ï¿½es --------------------------------------------------- */
 void speedProfile(void);
 void getEncoderStatus(void);
 void updateCurrentSpeed(void);
@@ -48,7 +52,7 @@ int32_t needToDecelerate(int32_t, int32_t, int32_t);
 void resetProfile(void);
 
 
-/* Variáveis externas --------------------------------------------------------*/
+/* Variï¿½veis externas --------------------------------------------------------*/
 extern int32_t distanceLeft, distance_mm;
 extern int32_t targetSpeedX, targetSpeedW;
 extern int32_t endSpeedX, endSpeedW;

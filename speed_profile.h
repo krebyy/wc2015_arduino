@@ -16,8 +16,8 @@
 /* Constantes ----------------------------------------------------------------*/
 #define KP_X 2
 #define KD_X 0
-#define KP_W 15
-#define KD_W 3
+#define KP_W 10//15 -- 800mm/s
+#define KD_W 80//3
 
 #define TS 10	// Tempo de atualização em [ms]
 

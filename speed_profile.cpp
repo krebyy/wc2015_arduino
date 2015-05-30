@@ -65,7 +65,7 @@ void getEncoderStatus(void)
 	rightEncoderCount += rightEncoderChange;
 	encoderCount =  (abs(leftEncoderCount) + abs(rightEncoderCount)) / 2;
 
-	distanceLeft -= encoderChange;// update distanceLeft
+	//distanceLeft -= encoderChange;// update distanceLeft
 	distance += encoderChange;
 	distance_mm = COUNTS_TO_MM(distance);
 }
@@ -142,7 +142,7 @@ void calculateMotorPwm(void) // encoder PD controller
 	posErrorW = curSpeedW - rotationalFeedback;
 
 	posPwmX = KP_X * posErrorX + KD_X * (posErrorX - oldPosErrorX);
-	posPwmW = (posErrorW / KP_W) + ((posErrorW - oldPosErrorW) / KD_W);
+	posPwmW = ((posErrorW * KP_W) / 128) + (((posErrorW - oldPosErrorW) * KD_W) / 128);
 
 	oldPosErrorX = posErrorX;
 	oldPosErrorW = posErrorW;

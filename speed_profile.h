@@ -14,20 +14,32 @@
 #include "motores.h"
 
 /* Constantes ----------------------------------------------------------------*/
-#define KP_X 2
-#define KD_X 0
-#define KP_W 10//15 -- 800mm/s
-#define KD_W 80//3
+#define KP_X 1
+#define KD_X 2
+#define KP_W 1
+#define KD_W 2
 
 #define TS 10	// Tempo de atualiza��o em [ms]
 
 #define CNT_PER_1000MM 3560
 #define CNT_PER_360DEG 928	// = ((2*pi*W_DISTANCE)*CNT_PER_1000MM)/(2*1000)          928
+#define W_DISTANCE	83
 
 #define SENSOR_SCALE 1
 
 #define MINIMAL_SX_STRAIGHT 5
 
+#define SIZE_BUFFER_SECTORS		20
+
+#define SEARCH_RUN		0
+#define FAST_RUN1		1
+#define FAST_RUN2		2
+#define PAUSE			9
+#define STOP			10
+
+#define GOAL_OK			4
+#define RUN_OK			5
+#define WAIT			6
 
 /* Macros --------------------------------------------------------------------*/
 #define MM_TO_COUNTS(mm)	((((int32_t)mm) * CNT_PER_1000MM) / 1000)
@@ -40,7 +52,9 @@
 #define ACCW_TO_COUNTS(acc)		(SPEEDW_TO_COUNTS((int32_t)acc / 2) / TS)
 #define COUNTS_TO_DEG(cnt)	((((int32_t)cnt) * 360) / CNT_PER_360DEG)
 
-#define ACCC_TO_COUNTS(acc) (float)((float)acc * 7296.0f) / 2133.3f)
+#define ACCC_TO_COUNTS(acc) (float)((float)acc / 702.2472f)
+
+#define W_2		(float)((float)MM_TO_COUNTS(W_DISTANCE) / 2.0f)
 
 
 /* Prot�tipos das Fun��es --------------------------------------------------- */
@@ -51,16 +65,22 @@ void calculateMotorPwm(void);
 int32_t needToDecelerate(int32_t, int32_t, int32_t);
 void resetProfile(void);
 
+void manageRuns(void);
+void calculateSpeedProfile(int32_t topSpeedX, int32_t accC);
+void changeSpeedProfile(void);
+void updateBufferSpeedProfile(void);
+
 
 /* Vari�veis externas --------------------------------------------------------*/
 extern int32_t distanceLeft, distance_mm;
 extern int32_t targetSpeedX, targetSpeedW;
 extern int32_t endSpeedX, endSpeedW;
 extern int32_t accX, decX, accW, decW;
-
-extern bool onlyUseEncoderFeedback;
-extern bool onlyUseGyroFeedback;
-extern bool onlyUseSensorFeedback;
+extern bool useEncoderFeedback;
+extern bool useGyroFeedback;
+extern bool useSensorFeedback;
+extern uint8_t num_run;
+extern int32_t buf_temp[2 * SIZE_BUFFER_SECTORS];
 
 
 

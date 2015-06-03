@@ -32,6 +32,6 @@ void readMarks(void);
 
 /* Variáveis externas --------------------------------------------------------*/
 extern bool valid_marker;
-extern int32_t frun;
+extern int32_t flag_run;
 
 #endif /* SENSORES_H_ */

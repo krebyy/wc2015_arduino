@@ -7,9 +7,9 @@
 
 #include "sensores.h"
 
-/* Variáveis externas --------------------------------------------------------*/
+/* Vari�veis externas --------------------------------------------------------*/
 bool valid_marker = false;
-int32_t frun = 0;
+int32_t flag_run = 0;
 
 
 /**
@@ -35,32 +35,32 @@ int32_t getSensorError(void)
 		// a m�dia ponderada
 		if (digitalRead(LINHA1) == LINHA)
 		{
-			soma += -1333;
+			soma += -333;
 			n++;
 		}
 		if (digitalRead(LINHA2) == LINHA)
 		{
-			soma += -667;
+			soma += -167;
 			n++;
 		}
 		if (digitalRead(LINHA3) == LINHA)
 		{
-			soma += -133;
+			soma += -33;
 			n++;
 		}
 		if (digitalRead(LINHA4) == LINHA)
 		{
-			soma += 133;
+			soma += 33;
 			n++;
 		}
 		if (digitalRead(LINHA5) == LINHA)
 		{
-			soma += 667;
+			soma += 167;
 			n++;
 		}
 		if (digitalRead(LINHA6) == LINHA)
 		{
-			soma += 1333;
+			soma += 333;
 			n++;
 		}
 
@@ -114,7 +114,7 @@ void readMarks(void)
 	static int32_t marker_corner = 0, marker_start_goal = 0;
 	static bool marker_intersection = false, fmarker = false;
 
-	// Detecção das marcas de partida/chegada
+	// DetecÃ§Ã£o das marcas de partida/chegada
 	if (digitalRead(R_MARK_R) == HIGH)
 	{
 		marker_start_goal++;
@@ -134,7 +134,7 @@ void readMarks(void)
 		marker_corner--;
 	}
 
-	 // detection of intersection, both marker - ignore intersection
+	// detection of intersection, both marker - ignore intersection
 	if (marker_start_goal > 1 && marker_corner > 1)
 	{
 		marker_intersection = true;
@@ -145,44 +145,47 @@ void readMarks(void)
 	}
 
 
-    // corner marker check
-    if (marker_intersection == true)
-    {
-    	fmarker = false;
-    }
-    if (marker_intersection == false && fmarker == false && marker_corner > MARKER_TH)
-    {	// corner marker detect
-    	fmarker = true;
-    }
-    if (marker_intersection == false && fmarker == true && marker_corner == 0)
-    {	// corner marker fix
+	// corner marker check
+	if (marker_intersection == true)
+	{
 		fmarker = false;
-		valid_marker = true;
-    }
+	}
+	if (marker_intersection == false && fmarker == false && marker_corner > MARKER_TH)
+	{	// corner marker detect
+		fmarker = true;
+	}
+	if (marker_intersection == false && fmarker == true && marker_corner == 0)
+	{	// corner marker fix
+		fmarker = false;
 
-    // start/goal marker check
-    if (frun == 0 && marker_start_goal > MARKER_TH)
-    {	// start marker detect
-    	frun = 1;
-    }
-    if (frun == 1 && marker_start_goal == 0)
-    {	// start marker fix
-		frun=2;
 		valid_marker = true;
-    }
-    if (frun == 2 && marker_start_goal > MARKER_TH)
-    {	// goal marker detect
-		frun = 3;
-    }
-    if (frun == 3 && marker_intersection == true)
-    {	// ignore intersection
-		frun = 2;
-    }
-    if (frun == 3 && marker_start_goal == 0)
-    {	// goal marker fix
-		frun = 4;
+	}
+
+	// start/goal marker check
+	if (flag_run == 0 && marker_start_goal > MARKER_TH)
+	{	// start marker detect
+		flag_run = 1;
+	}
+	if (flag_run == 1 && marker_start_goal == 0)
+	{	// start marker fix
+		flag_run=2;
+
+		valid_marker = true;
+	}
+	if (flag_run == 2 && marker_start_goal > MARKER_TH)
+	{	// goal marker detect
+		flag_run = 3;
+	}
+	if (flag_run == 3 && marker_intersection == true)
+	{	// ignore intersection
+		flag_run = 2;
+	}
+	if (flag_run == 3 && marker_start_goal == 0)
+	{	// goal marker fix
+		flag_run = GOAL_OK;
 		distanceLeft = MM_TO_COUNTS(150);
+		endSpeedX = 0;
 
 		valid_marker = true;
-    }
+	}
 }
